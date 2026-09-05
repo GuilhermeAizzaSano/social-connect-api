@@ -1,0 +1,136 @@
+openapi: 3.1.0
+info:
+  title: SocialConnect API
+  description: API RESTful de gestão para instituições sociais (Disciplina ITE005)
+  version: 0.0.1-SNAPSHOT
+servers:
+  - url: http://localhost:8080
+    description: Servidor de Desenvolvimento Local
+paths:
+  /api/v1/beneficiarios:
+    get:
+      summary: Lista todos os beneficiários
+      tags: [Beneficiários]
+      responses:
+        '200':
+          description: Lista de beneficiários
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Beneficiario'
+    post:
+      summary: Cria um novo beneficiário
+      tags: [Beneficiários]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeneficiarioCreate'
+      responses:
+        '201':
+          description: Beneficiário criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Beneficiario'
+  /api/v1/beneficiarios/{id_beneficiario}:
+    get:
+      summary: Busca um beneficiário pelo ID
+      tags: [Beneficiários]
+      parameters:
+        - name: id_beneficiario
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Dados do beneficiário
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Beneficiario' }
+    delete:
+      summary: Remove um beneficiário
+      tags: [Beneficiários]
+      parameters:
+        - name: id_beneficiario
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Beneficiário removido com sucesso
+
+  /api/v1/doadores:
+    get:
+      summary: Lista todos os doadores
+      tags: [Doadores]
+      responses:
+        '200':
+          description: Lista de doadores
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Doador' }
+
+  /api/v1/doacoes:
+    get:
+      summary: Lista doações com filtros avançados
+      tags: [Doações]
+      parameters:
+        - name: dataInicio
+          in: query
+          schema: { type: string, format: date }
+        - name: dataFim
+          in: query
+          schema: { type: string, format: date }
+        - name: tipo
+          in: query
+          schema: { type: string, enum: [ALIMENTO, ROUPA, FINANCEIRA] }
+      responses:
+        '200':
+          description: Lista de doações filtradas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Doacao' }
+
+components:
+  schemas:
+    Beneficiario:
+      type: object
+      properties:
+        id_beneficiario: { type: integer }
+        nome: { type: string }
+        cpf: { type: string }
+        telefone: { type: string }
+        endereco: { type: string }
+        situacao_vulnerabilidade: { type: string }
+        data_cadastro: { type: string, format: date }
+    BeneficiarioCreate:
+      type: object
+      required: [nome, cpf]
+      properties:
+        nome: { type: string }
+        cpf: { type: string }
+        telefone: { type: string }
+        endereco: { type: string }
+        situacao_vulnerabilidade: { type: string }
+    Doador:
+      type: object
+      properties:
+        id_doador: { type: integer }
+        nome: { type: string }
+        tipo: { type: string, enum: [PESSOA_FISICA, PESSOA_JURIDICA] }
+    Doacao:
+      type: object
+      properties:
+        id_doacao: { type: integer }
+        id_doador: { type: integer }
+        data_doacao: { type: string, format: date }
+        valor: { type: number, format: float }
+        tipo: { type: string, enum: [ALIMENTO, ROUPA, FINANCEIRA] }

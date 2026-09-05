@@ -1,0 +1,77 @@
+{
+  "1_POST_criar_status" : 201,
+  "1_POST_location_header" : "/api/v1/doacoes/1",
+  "1_POST_response_body" : {
+    "idDoacao" : 1,
+    "idDoador" : 10,
+    "dataDoacao" : "2026-08-20",
+    "valor" : 250.5,
+    "tipo" : "FINANCEIRA",
+    "descricao" : "Doação para campanha do agasalho"
+  },
+  "2_GET_por_id_status" : 200,
+  "2_GET_por_id_response_body" : {
+    "idDoacao" : 1,
+    "idDoador" : 10,
+    "dataDoacao" : "2026-08-20",
+    "valor" : 250.5,
+    "tipo" : "FINANCEIRA",
+    "descricao" : "Doação para campanha do agasalho"
+  },
+  "3_GET_paginado_filtros_status" : 200,
+  "3_GET_paginado_filtros_response_body" : {
+    "content" : [ {
+      "idDoacao" : 1,
+      "idDoador" : 10,
+      "dataDoacao" : "2026-08-20",
+      "valor" : 250.5,
+      "tipo" : "FINANCEIRA",
+      "descricao" : "Doação para campanha do agasalho"
+    } ],
+    "empty" : false,
+    "first" : true,
+    "last" : true,
+    "number" : 0,
+    "numberOfElements" : 1,
+    "pageable" : {
+      "offset" : 0,
+      "pageNumber" : 0,
+      "pageSize" : 20,
+      "paged" : true,
+      "sort" : {
+        "empty" : false,
+        "sorted" : true,
+        "unsorted" : false
+      },
+      "unpaged" : false
+    },
+    "size" : 20,
+    "sort" : {
+      "empty" : false,
+      "sorted" : true,
+      "unsorted" : false
+    },
+    "totalElements" : 1,
+    "totalPages" : 1
+  },
+  "4_PUT_substituicao_total_status" : 200,
+  "4_PUT_substituicao_total_response_body" : {
+    "idDoacao" : 1,
+    "idDoador" : 10,
+    "dataDoacao" : "2026-08-21",
+    "valor" : 300.0,
+    "tipo" : "ALIMENTO",
+    "descricao" : "Cestas básicas atualizadas"
+  },
+  "5_PATCH_atualizacao_parcial_status" : 200,
+  "5_PATCH_atualizacao_parcial_response_body" : {
+    "idDoacao" : 1,
+    "idDoador" : 10,
+    "dataDoacao" : "2026-08-21",
+    "valor" : 350.0,
+    "tipo" : "ALIMENTO",
+    "descricao" : "Cestas básicas atualizadas"
+  },
+  "6_DELETE_status" : 204,
+  "7_GET_apos_delete" : "Recurso inexistente, gerou exceção com sucesso conforme esperado."
+}
