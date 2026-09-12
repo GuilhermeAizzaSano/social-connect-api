@@ -153,11 +153,15 @@ class DoacaoControllerTest {
 
         responsesLog.put("6_DELETE_status", deleteResult.getResponse().getStatus());
 
-        // 7. GET após exclusão (Lança RuntimeException indicando não encontrado)
-        org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
-            mockMvc.perform(get("/api/v1/doacoes/{idDoacao}", idDoacao));
-        });
-        responsesLog.put("7_GET_apos_delete", "Recurso inexistente, gerou exceção com sucesso conforme esperado.");
+        // 7. GET após exclusão (Retorna 404 Not Found com Problem Details RFC 7807)
+        var getAfterDeleteResult = mockMvc.perform(get("/api/v1/doacoes/{idDoacao}", idDoacao))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Recurso não encontrado"))
+                .andReturn();
+
+        responsesLog.put("7_GET_apos_delete_status", getAfterDeleteResult.getResponse().getStatus());
+        responsesLog.put("7_GET_apos_delete_response_body", objectMapper.readValue(getAfterDeleteResult.getResponse().getContentAsString(), Object.class));
 
         // Salvar responses em arquivo JSON
         File outputFile = new File("target/doacoes-crud-responses.json");

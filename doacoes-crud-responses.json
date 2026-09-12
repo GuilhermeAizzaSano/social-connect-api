@@ -73,5 +73,14 @@
     "descricao" : "Cestas básicas atualizadas"
   },
   "6_DELETE_status" : 204,
-  "7_GET_apos_delete" : "Recurso inexistente, gerou exceção com sucesso conforme esperado."
+  "7_GET_apos_delete_status" : 404,
+  "7_GET_apos_delete_response_body" : {
+    "type" : "https://socialconnect.api/errors/nao-encontrado",
+    "title" : "Recurso não encontrado",
+    "status" : 404,
+    "detail" : "Doação não encontrada: 1",
+    "instance" : "uri=/api/v1/doacoes/1",
+    "timestamp" : "2026-09-11T22:03:05.1600446",
+    "errors" : [ ]
+  }
 }

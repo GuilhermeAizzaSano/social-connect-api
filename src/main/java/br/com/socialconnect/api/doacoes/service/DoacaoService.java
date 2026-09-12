@@ -6,6 +6,7 @@ import br.com.socialconnect.api.doacoes.dto.DoacaoResponseDTO;
 import br.com.socialconnect.api.doacoes.model.Doacao;
 import br.com.socialconnect.api.doacoes.model.TipoDoacao;
 import br.com.socialconnect.api.doacoes.repository.DoacaoRepository;
+import br.com.socialconnect.api.exception.RecursoNaoEncontradoException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class DoacaoService {
     public DoacaoResponseDTO buscarPorId(Long idDoacao) {
         return repository.findById(idDoacao)
                 .map(this::toResponseDTO)
-                .orElseThrow(() -> new RuntimeException("Doação não encontrada: " + idDoacao));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Doação não encontrada: " + idDoacao));
     }
 
     public DoacaoResponseDTO criar(DoacaoRequestDTO dto) {
@@ -45,7 +46,7 @@ public class DoacaoService {
 
     public DoacaoResponseDTO atualizar(Long idDoacao, DoacaoRequestDTO dto) {
         Doacao entity = repository.findById(idDoacao)
-                .orElseThrow(() -> new RuntimeException("Doação não encontrada: " + idDoacao));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Doação não encontrada: " + idDoacao));
 
         entity.setIdDoador(dto.idDoador());
         entity.setDataDoacao(dto.dataDoacao());
@@ -58,7 +59,7 @@ public class DoacaoService {
 
     public DoacaoResponseDTO atualizarParcial(Long idDoacao, DoacaoPatchDTO dto) {
         Doacao entity = repository.findById(idDoacao)
-                .orElseThrow(() -> new RuntimeException("Doação não encontrada: " + idDoacao));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Doação não encontrada: " + idDoacao));
 
         if (dto.idDoador() != null) entity.setIdDoador(dto.idDoador());
         if (dto.dataDoacao() != null) entity.setDataDoacao(dto.dataDoacao());
@@ -71,7 +72,7 @@ public class DoacaoService {
 
     public void deletar(Long idDoacao) {
         if (!repository.existsById(idDoacao)) {
-            throw new RuntimeException("Doação não encontrada: " + idDoacao);
+            throw new RecursoNaoEncontradoException("Doação não encontrada: " + idDoacao);
         }
         repository.deleteById(idDoacao);
     }

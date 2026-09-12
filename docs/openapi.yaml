@@ -36,6 +36,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Beneficiario'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '409':
+          description: CPF já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
   /api/v1/beneficiarios/{id_beneficiario}:
     get:
       summary: Busca um beneficiário pelo ID
@@ -51,6 +63,12 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Beneficiario' }
+        '404':
+          description: Beneficiário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
     delete:
       summary: Remove um beneficiário
       tags: [Beneficiários]
@@ -62,6 +80,12 @@ paths:
       responses:
         '204':
           description: Beneficiário removido com sucesso
+        '404':
+          description: Beneficiário não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
 
   /api/v1/doadores:
     get:
@@ -134,3 +158,22 @@ components:
         data_doacao: { type: string, format: date }
         valor: { type: number, format: float }
         tipo: { type: string, enum: [ALIMENTO, ROUPA, FINANCEIRA] }
+    ProblemDetail:
+      type: object
+      required: [title, status]
+      properties:
+        type: { type: string, format: uri, example: "https://socialconnect.api/errors/validacao" }
+        title: { type: string, example: "Erro de validação" }
+        status: { type: integer, example: 400 }
+        detail: { type: string, example: "Um ou mais campos são inválidos." }
+        instance: { type: string, example: "/api/v1/beneficiarios" }
+        timestamp: { type: string, format: date-time, example: "2026-09-11T21:49:15" }
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+    FieldError:
+      type: object
+      properties:
+        field: { type: string, example: "nome" }
+        message: { type: string, example: "Nome é obrigatório" }
