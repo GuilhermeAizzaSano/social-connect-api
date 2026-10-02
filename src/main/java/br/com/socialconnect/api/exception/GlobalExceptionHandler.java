@@ -32,6 +32,23 @@ public class GlobalExceptionHandler {
                 ))
                 .collect(Collectors.toList());
 
+        boolean hasEstoqueNegativo = ex.getBindingResult()
+                .getFieldErrors().stream()
+                .anyMatch(e -> "estoqueAtual".equals(e.getField()));
+
+        if (hasEstoqueNegativo) {
+            ProblemDetail problem = new ProblemDetail(
+                    "https://socialconnect.api/errors/estoque-invalido",
+                    "Estoque inválido",
+                    HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                    "Estoque atual não pode ser negativo.",
+                    request.getDescription(false),
+                    LocalDateTime.now(),
+                    errors
+            );
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
+        }
+
         ProblemDetail problem = new ProblemDetail(
                 "https://socialconnect.api/errors/validacao",
                 "Erro de validação",
@@ -43,6 +60,44 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+    }
+
+    // Estoque inválido (422)
+    @ExceptionHandler(EstoqueInvalidoException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ProblemDetail> handleEstoqueInvalido(
+            EstoqueInvalidoException ex, WebRequest request) {
+
+        ProblemDetail problem = new ProblemDetail(
+                "https://socialconnect.api/errors/estoque-invalido",
+                "Estoque inválido",
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now(),
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(problem);
+    }
+
+    // Nome de produto duplicado (409)
+    @ExceptionHandler(NomeProdutoDuplicadoException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ProblemDetail> handleNomeProdutoDuplicado(
+            NomeProdutoDuplicadoException ex, WebRequest request) {
+
+        ProblemDetail problem = new ProblemDetail(
+                "https://socialconnect.api/errors/nome-produto-duplicado",
+                "Nome de produto já cadastrado",
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now(),
+                List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
     }
 
     // CPF duplicado (409)
