@@ -1,8 +1,8 @@
 package br.com.socialconnect.api.beneficiarios.dto;
 
+import br.com.socialconnect.api.validation.CPF;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record BeneficiarioRequestDTO(
@@ -14,10 +14,7 @@ public record BeneficiarioRequestDTO(
 
     @Schema(description = "CPF sem formatação", example = "12345678900")
     @NotBlank(message = "{NotBlank.cpf}")
-    @Pattern(
-        regexp = "\\d{11}|\\d{14}",
-        message = "{Pattern.cpf}"
-    )
+    @CPF
     String cpf,
 
     @Schema(description = "Telefone com DDD", example = "11999999999")

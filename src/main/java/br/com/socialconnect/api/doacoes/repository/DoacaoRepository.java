@@ -14,6 +14,14 @@ import java.time.LocalDate;
 @Repository
 public interface DoacaoRepository extends JpaRepository<Doacao, Long> {
 
+    // Método derivado pelo nome conforme Mob Programming
+    Page<Doacao> findByDataDoacaoBetweenAndTipo(
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            TipoDoacao tipo,
+            Pageable pageable
+    );
+
     @Query("SELECT d FROM Doacao d WHERE " +
            "(:dataInicio IS NULL OR d.dataDoacao >= :dataInicio) AND " +
            "(:dataFim IS NULL OR d.dataDoacao <= :dataFim) AND " +

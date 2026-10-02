@@ -26,6 +26,8 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+
 @SpringBootTest
 @ActiveProfiles("test")
 class DoacaoControllerTest {
@@ -35,6 +37,9 @@ class DoacaoControllerTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
             .enable(SerializationFeature.INDENT_OUTPUT);
@@ -42,6 +47,10 @@ class DoacaoControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        Integer count = jdbcTemplate.queryForObject("SELECT count(*) FROM doadores WHERE id_doador = 10", Integer.class);
+        if (count == null || count == 0) {
+            jdbcTemplate.update("INSERT INTO doadores (id_doador, nome, tipo, email, telefone) VALUES (10, 'Doador Teste', 'PESSOA_FISICA', 'doador@teste.com', '11999998888')");
+        }
     }
 
     @Test
@@ -169,5 +178,26 @@ class DoacaoControllerTest {
 
         File rootOutputFile = new File("doacoes-crud-responses.json");
         objectMapper.writeValue(rootOutputFile, responsesLog);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 Bad Request com RFC 7807 ao tentar registrar doação com data futura")
+    void deveRetornar400QuandoDataFutura() throws Exception {
+        DoacaoRequestDTO requestInvalido = new DoacaoRequestDTO(
+                10L,
+                LocalDate.now().plusDays(10),
+                new BigDecimal("100.00"),
+                TipoDoacao.FINANCEIRA,
+                "Doação com data futura"
+        );
+
+        mockMvc.perform(post("/api/v1/doacoes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestInvalido)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value("https://socialconnect.api/errors/validacao"))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail", containsString("inválidos")))
+                .andExpect(jsonPath("$.errors[0].message", containsString("futuro")));
     }
 }

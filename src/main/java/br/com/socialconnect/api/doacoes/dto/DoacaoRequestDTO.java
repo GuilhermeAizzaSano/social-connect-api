@@ -3,6 +3,7 @@ package br.com.socialconnect.api.doacoes.dto;
 import br.com.socialconnect.api.doacoes.model.TipoDoacao;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ public record DoacaoRequestDTO(
 
         @Schema(description = "Data em que a doação foi realizada", example = "2026-08-20")
         @NotNull(message = "Data da doação é obrigatória")
+        @PastOrPresent(message = "A data da doação não pode ser no futuro")
         LocalDate dataDoacao,
 
         @Schema(description = "Valor financeiro da doação", example = "250.50")

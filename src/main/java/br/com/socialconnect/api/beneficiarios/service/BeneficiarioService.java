@@ -9,6 +9,10 @@ import br.com.socialconnect.api.exception.CpfDuplicadoException;
 import br.com.socialconnect.api.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 
+import br.com.socialconnect.api.beneficiarios.dto.BeneficiarioPatchDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,6 +24,18 @@ public class BeneficiarioService {
     // Injeção de dependência via construtor (Boa prática para testes)
     public BeneficiarioService(BeneficiarioRepository repository) {
         this.repository = repository;
+    }
+
+    public Page<BeneficiarioResponseDTO> listar(String nome, String cpf, Pageable pageable) {
+        Page<Beneficiario> page;
+        if (cpf != null && !cpf.isBlank()) {
+            page = repository.findByCpf(cpf, pageable);
+        } else if (nome != null && !nome.isBlank()) {
+            page = repository.findByNomeContainingIgnoreCase(nome, pageable);
+        } else {
+            page = repository.findAll(pageable);
+        }
+        return page.map(this::toResponseDTO);
     }
 
     public List<BeneficiarioResponseDTO> listarTodos() {
@@ -41,6 +57,35 @@ public class BeneficiarioService {
         Beneficiario beneficiario = toEntity(dto);
         beneficiario = repository.save(beneficiario);
         return toResponseDTO(beneficiario);
+    }
+
+    public BeneficiarioResponseDTO atualizar(Long idBeneficiario, BeneficiarioRequestDTO dto) {
+        Beneficiario entity = repository.findById(idBeneficiario)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Beneficiário não encontrado com o ID: " + idBeneficiario));
+
+        if (!entity.getCpf().equals(dto.cpf()) && repository.existsByCpf(dto.cpf())) {
+            throw new CpfDuplicadoException(dto.cpf());
+        }
+
+        entity.setNome(dto.nome());
+        entity.setCpf(dto.cpf());
+        entity.setTelefone(dto.telefone());
+        entity.setEndereco(dto.endereco());
+        entity.setSituacaoVulnerabilidade(dto.situacaoVulnerabilidade());
+
+        return toResponseDTO(repository.save(entity));
+    }
+
+    public BeneficiarioResponseDTO atualizarParcial(Long idBeneficiario, BeneficiarioPatchDTO dto) {
+        Beneficiario entity = repository.findById(idBeneficiario)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Beneficiário não encontrado com o ID: " + idBeneficiario));
+
+        if (dto.nome() != null) entity.setNome(dto.nome());
+        if (dto.telefone() != null) entity.setTelefone(dto.telefone());
+        if (dto.endereco() != null) entity.setEndereco(dto.endereco());
+        if (dto.situacaoVulnerabilidade() != null) entity.setSituacaoVulnerabilidade(dto.situacaoVulnerabilidade());
+
+        return toResponseDTO(repository.save(entity));
     }
 
     public void deletar(Long idBeneficiario) {

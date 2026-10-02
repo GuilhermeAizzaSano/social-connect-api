@@ -6,6 +6,7 @@ import br.com.socialconnect.api.doacoes.dto.DoacaoResponseDTO;
 import br.com.socialconnect.api.doacoes.model.Doacao;
 import br.com.socialconnect.api.doacoes.model.TipoDoacao;
 import br.com.socialconnect.api.doacoes.repository.DoacaoRepository;
+import br.com.socialconnect.api.doadores.repository.DoadorRepository;
 import br.com.socialconnect.api.exception.RecursoNaoEncontradoException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,13 +18,20 @@ import java.time.LocalDate;
 public class DoacaoService {
 
     private final DoacaoRepository repository;
+    private final DoadorRepository doadorRepository;
 
-    public DoacaoService(DoacaoRepository repository) {
+    public DoacaoService(DoacaoRepository repository, DoadorRepository doadorRepository) {
         this.repository = repository;
+        this.doadorRepository = doadorRepository;
     }
 
     public Page<DoacaoResponseDTO> listar(LocalDate dataInicio, LocalDate dataFim, TipoDoacao tipo, Pageable pageable) {
-        Page<Doacao> page = repository.findComFiltros(dataInicio, dataFim, tipo, pageable);
+        Page<Doacao> page;
+        if (dataInicio != null && dataFim != null && tipo != null) {
+            page = repository.findByDataDoacaoBetweenAndTipo(dataInicio, dataFim, tipo, pageable);
+        } else {
+            page = repository.findComFiltros(dataInicio, dataFim, tipo, pageable);
+        }
         return page.map(this::toResponseDTO);
     }
 
@@ -34,6 +42,9 @@ public class DoacaoService {
     }
 
     public DoacaoResponseDTO criar(DoacaoRequestDTO dto) {
+        doadorRepository.findById(dto.idDoador())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Doador não encontrado com o ID: " + dto.idDoador()));
+
         Doacao entity = Doacao.builder()
                 .idDoador(dto.idDoador())
                 .dataDoacao(dto.dataDoacao())

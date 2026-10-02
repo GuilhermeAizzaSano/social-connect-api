@@ -1,5 +1,6 @@
 package br.com.socialconnect.api.beneficiarios;
 
+import br.com.socialconnect.api.beneficiarios.dto.BeneficiarioPatchDTO;
 import br.com.socialconnect.api.beneficiarios.dto.BeneficiarioRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -133,11 +134,87 @@ class BeneficiarioControllerTest {
     }
 
     @Test
-    @DisplayName("Deve listar beneficiários retornando 200 OK")
+    @DisplayName("Deve listar beneficiários retornando 200 OK com envelope paginado")
     void deveListarBeneficiarios() throws Exception {
         mockMvc.perform(get("/api/v1/beneficiarios"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.content").isArray());
+    }
+
+    @Test
+    @DisplayName("Deve atualizar beneficiário completamente com PUT retornando 200 OK")
+    void deveAtualizarBeneficiarioComPut() throws Exception {
+        BeneficiarioRequestDTO dtoCriacao = new BeneficiarioRequestDTO(
+                "Lucas Alencar",
+                "11122233344",
+                "11988880000",
+                "Rua A, 10",
+                "Sem renda"
+        );
+
+        var result = mockMvc.perform(post("/api/v1/beneficiarios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dtoCriacao)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Number idNumber = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.idBeneficiario");
+        Long idBeneficiario = idNumber.longValue();
+
+        BeneficiarioRequestDTO dtoAtualizacao = new BeneficiarioRequestDTO(
+                "Lucas Alencar Silva",
+                "11122233344",
+                "11988889999",
+                "Rua B, 20",
+                "Empregado recentemente"
+        );
+
+        mockMvc.perform(put("/api/v1/beneficiarios/{id}", idBeneficiario)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dtoAtualizacao)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idBeneficiario").value(idBeneficiario))
+                .andExpect(jsonPath("$.nome").value("Lucas Alencar Silva"))
+                .andExpect(jsonPath("$.telefone").value("11988889999"))
+                .andExpect(jsonPath("$.endereco").value("Rua B, 20"))
+                .andExpect(jsonPath("$.situacaoVulnerabilidade").value("Empregado recentemente"));
+    }
+
+    @Test
+    @DisplayName("Deve atualizar beneficiário parcialmente com PATCH retornando 200 OK")
+    void deveAtualizarBeneficiarioComPatch() throws Exception {
+        BeneficiarioRequestDTO dtoCriacao = new BeneficiarioRequestDTO(
+                "Fernanda Souza",
+                "99988877766",
+                "11977776666",
+                "Rua Central, 50",
+                "Vulnerabilidade"
+        );
+
+        var result = mockMvc.perform(post("/api/v1/beneficiarios")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dtoCriacao)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Number idNumber = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.idBeneficiario");
+        Long idBeneficiario = idNumber.longValue();
+
+        BeneficiarioPatchDTO patchDTO = new BeneficiarioPatchDTO(
+                null,
+                "11911110000",
+                null,
+                null
+        );
+
+        mockMvc.perform(patch("/api/v1/beneficiarios/{id}", idBeneficiario)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.idBeneficiario").value(idBeneficiario))
+                .andExpect(jsonPath("$.nome").value("Fernanda Souza"))
+                .andExpect(jsonPath("$.telefone").value("11911110000"));
     }
 
     @Test
